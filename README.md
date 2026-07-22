@@ -2,7 +2,7 @@
 
 A 3D interactive simulator developed with Three.js, designed to visualize and experiment with airline revenue management strategies.
 
-[**Live Demo**](https://tolgakurtuluss.github.io/airline-revenue-simulator/)
+[**Live Demo**](https://tolgakurtuluss.github.io/rmsimulator/)
 
 ---
 
