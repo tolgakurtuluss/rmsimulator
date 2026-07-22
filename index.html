@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Airline Revenue Management Simulator</title>
+		<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✈️</text></svg>">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				margin: 0;
+				color: #fff;
+				background-color: #000;
+				font-family: Monospace;
+				font-size: 13px;
+				line-height: 24px;
+				overscroll-behavior: none;
+			}
+			#tooltip {
+				position: absolute;
+				display: none;
+				padding: 10px;
+				background: rgba(0,0,0,0.8);
+				border: 1px solid #777;
+				border-radius: 5px;
+				pointer-events: none;
+				z-index: 100;
+			}
+			.lil-gui {
+				right: 0;
+				left: auto;
+			}
+			#info {
+				position: absolute;
+				top: 10px;
+				left: 10px;
+				width: 300px;
+				padding: 15px; /* Increased padding */
+				background: rgba(10, 10, 20, 0.9); /* Slightly lighter, more opaque background */
+				border: 1px solid #555; /* Subtle border */
+				border-radius: 8px; /* Slightly more rounded corners */
+				line-height: 1.5; /* Improved line spacing */
+				box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Add subtle shadow */
+				color: #e0e0e0; /* Lighter text color */
+				font-size: 14px;
+                text-align: center; /* Center inline-block children */
+			}
+			#info h2 {
+				margin-top: 0;
+				margin-bottom: 10px;
+				font-size: 18px; /* Slightly larger heading */
+				color: #ffffff; /* White heading color */
+				border-bottom: 1px solid #444; /* Separator for heading */
+				padding-bottom: 8px;
+			}
+			#info h3 {
+				margin-top: 15px;
+				margin-bottom: 8px;
+				font-size: 15px;
+				color: #ffffff;
+			}
+			#info p, #info ul {
+				margin-bottom: 10px;
+			}
+			#info ul {
+				list-style-type: none; /* Remove default bullet points */
+				padding-left: 0; /* Remove default padding */
+			}
+			#info ul li {
+				margin-bottom: 5px;
+				padding-left: 15px; /* Indent list items */
+				position: relative;
+			}
+			#info ul li::before {
+				content: '•'; /* Custom bullet point */
+				color: #4CAF50; /* Green bullet point */
+				position: absolute;
+				left: 0;
+			}
+            #start-tutorial {
+                background-color: #4CAF50; /* Green */
+                border: none;
+                color: white;
+                padding: 15px 32px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+                margin: 10px auto; /* Center button */
+                cursor: pointer;
+                border-radius: 8px;
+                transition: background-color 0.3s ease, transform 0.2s ease;
+                width: 80%; /* Make button wider */
+            }
+            #start-tutorial:hover {
+                background-color: #45a049;
+                transform: scale(1.05); /* Pop effect on hover */
+            }
+            #start-tutorial:active {
+                transform: scale(0.98);
+            }
+			#camera-controls-container {
+				position: absolute;
+				bottom: 50px; /* Adjusted to be above the footer */
+				left: 10px;
+				z-index: 102;
+				background: rgba(10, 10, 20, 0.75);
+				padding: 10px;
+				border-radius: 8px;
+				border: 1px solid #444;
+				text-align: center;
+			}
+			.camera-controls-title {
+				color: #e0e0e0;
+				font-size: 14px;
+				margin-bottom: 10px;
+				font-weight: bold;
+			}
+			#camera-views {
+				position: relative;
+				bottom: auto;
+				left: auto;
+				display: flex;
+				gap: 10px;
+				justify-content: center;
+			}
+			#camera-views button {
+				width: 40px;
+				height: 40px;
+				background: rgba(0,0,0,0.7);
+				border: 1px solid #777;
+				color: #fff;
+				font-size: 16px;
+				cursor: pointer;
+				border-radius: 5px;
+				transition: background-color 0.2s ease, transform 0.2s ease;
+			}
+			#camera-views button:hover {
+				background: rgba(255,255,255,0.2);
+			}
+			#tutorial-container {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				width: 400px;
+				background: rgba(0,0,0,0.85);
+				border: 1px solid #999;
+				border-radius: 10px;
+				padding: 20px;
+				z-index: 200;
+				text-align: center;
+			}
+			#tutorial-text {
+				font-size: 15px;
+				line-height: 1.6;
+				margin-bottom: 20px;
+			}
+			#tutorial-next {
+				padding: 10px 20px;
+				background: #337ab7;
+				border: none;
+				color: #fff;
+				border-radius: 5px;
+				cursor: pointer;
+				font-size: 14px;
+			}
+			#tutorial-next:hover {
+				background: #286090;
+			}
+			#info-toggle {
+				position: absolute;
+				top: 10px;
+				left: 10px;
+				width: 30px;
+				height: 30px;
+				background: rgba(0,0,0,0.7);
+				border: 1px solid #777;
+				color: #fff;
+				font-size: 16px;
+				cursor: pointer;
+				border-radius: 5px;
+				display: none;
+			}
+			.highlighted-element {
+				border: 3px solid #00aaff !important;
+				border-radius: 8px !important;
+				box-shadow: 0 0 25px 10px #00aaff !important;
+				transition: box-shadow 0.3s ease-in-out, border 0.3s ease-in-out;
+			}
+			#camera-views button {
+				transition: box-shadow 0.3s ease-in-out, border 0.3s ease-in-out;
+			}
+			footer {
+				position: absolute;
+				bottom: 0;
+				width: 100%;
+				background: rgba(10, 10, 20, 0.75); /* Made fainter */
+				border-top: 1px solid #444; /* Made fainter */
+				padding: 10px 0;
+				text-align: center;
+				font-size: 14px;
+				color: #aaa; /* Made fainter */
+				z-index: 101;
+			}
+			footer a {
+				color: #87ceeb;
+				text-decoration: none;
+				margin: 0 15px;
+				transition: color 0.3s ease;
+			}
+			footer a:hover {
+				color: #ffffff;
+				text-decoration: underline;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="tooltip"></div>
+		<button id="info-toggle">i</button>
+		<div id="info">
+			<button id="info-close" style="float: right; background: none; border: none; color: white; font-size: 16px; cursor: pointer;">×</button>
+			<h2>Revenue Management Simulator</h2>
+			<p>
+				Optimize airline revenue by managing seat prices and availability across different booking classes.
+			</p>
+			<hr>
+			<h3>Key Concepts:</h3>
+			<ul>
+				<li><strong><u>Booking Classes:</u></strong> Different fare categories (e.g., Economy, Business) with varying prices.</li>
+				<li><strong><u>Capacity Control:</u></strong> Manage how many seats are allocated to each booking class.</li>
+				<li><strong><u>Overbooking:</u></strong> Selling more seats than available to compensate for no-shows.</li>
+				<li><strong><u>Revenue:</u></strong> Total income generated from ticket sales.</li>
+			</ul>
+			
+			<h3>How to Use:</h3>
+			<ul>
+				<li><strong>Explore:</strong> Rotate, pan, and zoom the aircraft model.</li>
+				<li><strong>Simulation:</strong> Run booking scenarios to observe outcomes.</li>
+				<li><strong>Strategies:</strong> Fine-tune prices and capacities to maximize revenue.</li>
+			</ul>
+			
+			<button id="start-tutorial">Start Tutorial</button>
+			<hr>
+			<b>Credits:</b> Airplane 3D Model by <a href="https://www.cgtrader.com/designers/pablostudio111" target="_blank">pablostudio111-CGTrader</a>
+
+		</div>
+		<div id="tutorial-container" style="display: none;">
+			<div id="tutorial-step">
+				<p id="tutorial-text"></p>
+				<button id="tutorial-next">Next</button>
+			</div>
+		</div>
+		<div id="camera-controls-container">
+			<div class="camera-controls-title">Camera Views</div>
+			<div id="camera-views">
+				<button id="view1" title="Wide Shot">1</button>
+				<button id="view2" title="Cabin View">2</button>
+				<button id="view3" title="Cockpit View">3</button>
+				<button id="view4" title="Top-Down View">4</button>
+			</div>
+		</div>
+
+		<footer>
+			<a href="https://github.com/tolgakurtuluss" target="_blank">GitHub</a> |
+			<a href="https://www.linkedin.com/in/tolgakurtulus/" target="_blank">LinkedIn</a>
+			
+		</footer>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+					"three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/",
+					"lil-gui": "https://unpkg.com/lil-gui@0.19.1/dist/lil-gui.esm.js"
+				}
+			}
+		</script>
+		<script type="module" src="./main.js"></script>
+	</body>
+</html>
